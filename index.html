@@ -6,7 +6,19 @@
     <title>Source Code Viewer</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
-        video { width: 100%; height: 100%; object-fit: cover; display: none; }
+        
+        /* Keep video physically alive in DOM but hidden to force preload */
+        video { 
+            width: 0px; 
+            height: 0px; 
+            object-fit: cover; 
+        }
+        
+        /* Transitions smoothly to full screen on trigger */
+        video.active {
+            width: 100%;
+            height: 100%;
+        }
         
         /* The Click Prompt Overlay */
         #overlay {
@@ -25,6 +37,7 @@
             border-radius: 6px;
             border: 1px solid rgba(240,246,252,0.1);
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            user-select: none;
         }
     </style>
 </head>
@@ -34,20 +47,26 @@
     <div class="btn">Click for Code</div>
 </div>
 
-<video id="rickroll" width="100%" height="100%" loop muted playsinline>
-    <source src="https://dropbox.com" type="video/mp4">
+<!-- Added "preload" and "playsinline" tags to guarantee backend memory cache -->
+<video id="rickroll" loop muted preload="auto" playsinline>
+    <source src="https://dropboxusercontent.com" type="video/mp4">
 </video>
 
 <script>
+  // Attempt to silently start the video asset buffer immediately on page entry
+  window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('rickroll').play().catch(() => {});
+  });
+
   document.getElementById('overlay').addEventListener('click', function() {
       const video = document.getElementById('rickroll');
       const overlay = document.getElementById('overlay');
       
-      // Hide the button prompt and show the video
+      // Expand video size parameters and drop prompt
       overlay.style.display = 'none';
-      video.style.display = 'block';
+      video.classList.add('active');
       
-      // Unmute and play at full blast
+      // Force complete audio unmute stream
       video.muted = false;
       video.play();
   });
