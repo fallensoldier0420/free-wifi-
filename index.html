@@ -56,6 +56,7 @@
   window.addEventListener('DOMContentLoaded', () => {
       const video = document.getElementById('videoplayback');
       if (video) {
+          // Start pre-buffering the video silently in the background
           video.play().catch(() => {});
       }
   });
@@ -65,14 +66,19 @@
       const overlay = document.getElementById('overlay');
       
       if (video) {
+          // 1. Instantly hide the button and expand the video window layout
+          overlay.style.display = 'none';
+          video.classList.add('active');
+          
+          // 2. Unmute and force playback right after the layout shift
           video.muted = false;
-          video.play();
-
-          // This will now successfully trigger as soon as the fixed URL loads data
-          video.onplaying = function() {
-              overlay.style.display = 'none';
-              video.classList.add('active');
-          };
+          
+          // A tiny timeout gives the mobile browser a millisecond to process the unmute action
+          setTimeout(() => {
+              video.play().catch((err) => {
+                  console.log("Playback error:", err);
+              });
+          }, 50);
       }
   });
 </script>
