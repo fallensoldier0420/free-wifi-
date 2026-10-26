@@ -53,13 +53,11 @@
 </video>
 
 <script>
-  // Attempt to silently start the video asset buffer immediately on page entry
+  // Silently pre-buffer video frames instantly on page arrival
   window.addEventListener('DOMContentLoaded', () => {
       const video = document.getElementById('rickroll');
       if (video) {
-          video.play().catch((err) => { 
-              console.log("Autoplay restricted by browser until user click:", err); 
-          });
+          video.play().catch(() => { /* Standard browser autoplay blocks caught silently */ });
       }
   });
 
@@ -68,13 +66,17 @@
       const overlay = document.getElementById('overlay');
       
       if (video) {
-          // Hide button and expand video window
-          overlay.style.display = 'none';
-          video.classList.add('active');
-          
-          // Unmute audio and resume full volume play track
+          // 1. Force audio un-mute right away
           video.muted = false;
+          
+          // 2. Fire the play command while keeping the button visible
           video.play();
+
+          // 3. ONLY change layout frames once the browser confirms video stream playback has started
+          video.onplaying = function() {
+              overlay.style.display = 'none';
+              video.classList.add('active');
+          };
       }
   });
 </script>
